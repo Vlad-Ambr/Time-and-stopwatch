@@ -37,7 +37,7 @@ namespace Timer_and_stopwatch
             this.Text = "Timer";
             this.Width = 450;
             this.Height = 300;
-            this.Load += (s, e) => this.Controls.Add(PanelTimer);
+            this.Load += Timer_Setting;
 
 
             //
@@ -57,11 +57,7 @@ namespace Timer_and_stopwatch
             Timers.Text = "Timer";
             Timers.ForeColor = Color.FromArgb(255, 255, 255);
             Timers.BackColor = Color.FromArgb(153, 153, 153);
-            Timers.Click += (s, e) =>
-            {
-                this.Controls.RemoveByKey("panel_2");
-                this.Controls.Add(PanelTimer);
-            };
+            Timers.Click += Timer_Setting;
             Switch.Items.Add(Timers);
 
 
@@ -73,36 +69,8 @@ namespace Timer_and_stopwatch
             Stopwatches.Text = "Stopwatch";
             Stopwatches.ForeColor = Color.FromArgb(255, 255, 255);
             Stopwatches.BackColor = Color.FromArgb(188, 188, 188);
-            Stopwatches.Click += (s, e) =>
-            {
-                this.Controls.RemoveByKey("panel_1");
-                this.Controls.Add(PanelStopwatch);
-            };
+            Stopwatches.Click += Stopwatches_Setting;
             Switch.Items.Add(Stopwatches);
-
-
-
-            //
-            //
-            //
-            PanelTimer = new Panel();
-            PanelTimer.Name = "panel_1";
-            PanelTimer.Width = this.Width;
-            PanelTimer.Height = this.Height - Switch.Height;
-            PanelTimer.BackColor = Color.FromArgb(153, 153, 153);
-            PanelTimer.Location = new Point(0, Switch.Height);
-
-
-
-            //
-            //
-            //
-            PanelStopwatch = new Panel();
-            PanelStopwatch.Name = "panel_2";
-            PanelStopwatch.Width = this.Width;
-            PanelStopwatch.Height = this.Height - Switch.Height;
-            PanelStopwatch.BackColor = Color.FromArgb(188, 188, 188);
-            PanelStopwatch.Location = new Point(0, Switch.Height);
 
 
 
@@ -112,13 +80,13 @@ namespace Timer_and_stopwatch
             Seconds = new ListBox();
             Seconds.Font = new Font(Seconds.Font.FontFamily, 22);
             Seconds.Width = 58;
-            Seconds.Height = 120;
-            Seconds.BackColor = Color.White;
-            for(int i = 1; i <= 60; i++)
+            Seconds.Height = 40;
+            for (int i = 0; i <= 60; i++)
                 Seconds.Items.Add(i.ToString());
-            Seconds.Location = new Point((PanelTimer.Width / 2) + ((Seconds.Width / 2) + 20), (PanelTimer.Height / 2) - 100);
-            PanelTimer.Controls.Add(Seconds);
-
+            Seconds.SelectedIndex = 0;
+            Seconds.Location = new Point((this.Width / 2) + ((Seconds.Width / 2) + 20), (this.Height / 2) - 100);
+            this.Controls.Add(Seconds);
+            
 
 
             //
@@ -127,12 +95,12 @@ namespace Timer_and_stopwatch
             Minutes = new ListBox();
             Minutes.Font = new Font(Minutes.Font.FontFamily, 22);
             Minutes.Width = 58;
-            Minutes.Height = 120;
-            Minutes.BackColor = Color.White;
-            for(int i = 1; i <= 60; i++)
+            Minutes.Height = 40;
+            for (int i = 0; i <= 60; i++)
                 Minutes.Items.Add(i.ToString());
-            Minutes.Location = new Point((PanelTimer.Width / 2) - (Minutes.Width / 2 + 5), (PanelTimer.Height / 2) - 100);
-            PanelTimer.Controls.Add(Minutes);
+            Minutes.SelectedIndex = 0;
+            Minutes.Location = new Point((this.Width / 2) - (Minutes.Width / 2 + 5), (this.Height / 2) - 100);
+            this.Controls.Add(Minutes);
 
 
 
@@ -142,23 +110,98 @@ namespace Timer_and_stopwatch
             Hours = new ListBox();
             Hours.Font = new Font(Hours.Font.FontFamily, 22);
             Hours.Width = 58;
-            Hours.Height = 120;
-            Hours.BackColor = Color.White;
-            Hours.ForeColor = Color.Gray;
-            Hours.SelectedIndexChanged += (s, e) => Hours.ForeColor = Color.Black;
-            for (int i = 1; i <= 24; i++)
+            Hours.Height = 40;
+            for (int i = 0; i <= 24; i++)
                 Hours.Items.Add(i.ToString());
-            Hours.Location = new Point((PanelTimer.Width / 2) - ((Hours.Width / 2) + 88), (PanelTimer.Height / 2) - 100);
-            PanelTimer.Controls.Add(Hours);
+            Hours.SelectedIndex = 0;
+            Hours.Location = new Point((this.Width / 2) - ((Hours.Width / 2) + 88), (this.Height / 2) - 100);
+            this.Controls.Add(Hours);
+
+
+
+            //
+            //
+            //
+            Timer1 = new Timer();
+            Timer1.Interval = 1000;
+
+
+
+            //
+            //
+            //
+            StartAndStop = new Button();
+            StartAndStop.Text = "Start";
+            StartAndStop.BackColor = Color.FromArgb(255, 255, 255);
+            StartAndStop.Location = new Point((this.Width / 2) + (StartAndStop.Width / 2), Minutes.Location.Y + Minutes.Height + 20);
+            this.Controls.Add(StartAndStop);
+
+
+
+            //
+            //
+            //
+            Restart = new Button();
+            Restart.Text = "Restart";
+            Restart.BackColor = Color.FromArgb(255, 255, 255);
+            Restart.Location = new Point((this.Width / 2) - ((Restart.Width / 2) + Restart.Width), Minutes.Location.Y + Minutes.Height + 20);
+            this.Controls.Add(Restart);
+
+
+
+            //
+            //
+            //
+            EndTimer = new ProgressBar();
+            EndTimer.Name = "ProgBar_Time";
+            EndTimer.Minimum = 0;
+            EndTimer.Width = this.Width - 70;
+            EndTimer.Location = new Point(25, StartAndStop.Location.Y + StartAndStop.Height + 25);
+
+
+            
+            //
+            //
+            //
+            alert = new Timer();
+            alert.Interval = 400;
+            alert.Tick += (s, e) =>
+            {
+                time--;
+                if (RedBlue)
+                {
+                    this.BackColor = Color.FromArgb(255, 0, 0);
+                    RedBlue = false;
+                }
+                else
+                {
+                    this.BackColor = Color.FromArgb(0, 0, 255);
+                    RedBlue = true;
+                }
+                if(time == 0)
+                {
+                    alert.Stop();
+                    this.BackColor = Color.FromArgb(153, 153, 153);
+                    time = 10;
+                    StartAndStop.Text = "Start";
+                    isTimerRunning = false;
+                    Restart.Enabled = true;
+                }
+            };
         }
+        
         MenuStrip Switch;
         ToolStripMenuItem Timers;
         ToolStripMenuItem Stopwatches;
-        Panel PanelTimer;
-        Panel PanelStopwatch;
         ListBox Seconds;
         ListBox Minutes;
         ListBox Hours;
+        ProgressBar EndTimer;
+        Timer Timer1;
+        Button StartAndStop;
+        Button Restart;
+        Timer alert;
+        
         #endregion
     }
 }
